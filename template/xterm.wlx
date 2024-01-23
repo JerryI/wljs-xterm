@@ -1,0 +1,25 @@
+Component[OptionsPattern[]] := With[{messager = OptionValue["MessagePort"], Uid = CreateUUID[]},
+    EventHandler[Uid, Function[Null,
+        With[{client = Global`$Client (*`*)},
+            WebUISubmit[Global`UIXtermLoad["xterm-container"](*`*), client];
+            Echo[messager];
+            EventHandler[EventClone[messager], {
+                any_String :> Function[mess,
+                    Echo[ToString[mess]];
+                    Echo[any];
+                    WebUISubmit[Global`UIXtermPrint[ToString[mess], any](*`*), client];
+                ]
+            }];
+        ];
+    ]];
+
+    {
+        <div id="xterm-container" style="background: rgb(239,239,239)" class="sticky bottom-0 z-40 h-40 shrink-0 overflow-hidden border-t border-gray-300 bg-white"></div>
+    ,
+        <WebUIOnLoad Event={Uid}/>
+    } // StringRiffle
+];
+
+Options[Component] = {"MessagePort" -> "blaclhole"};
+
+Component
