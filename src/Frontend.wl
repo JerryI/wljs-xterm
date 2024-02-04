@@ -13,5 +13,6 @@ Begin["`Private`"]
 rootDir = $InputFileName // DirectoryName // ParentDirectory;
 AppExtensions`TemplateInjection["AppFooter"] = ImportComponent[FileNameJoin[{rootDir, "template", "xterm.wlx"}] ];
 
+
 End[]
 EndPackage[]

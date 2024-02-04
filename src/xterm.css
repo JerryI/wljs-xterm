@@ -35,6 +35,21 @@
  *  Default styles for xterm.js
  */
 
+@font-face {
+    font-family: 'Fixedsys Excelsior';
+    src: url(/wljs-xterm/fonts/fixedsys.ttf);
+
+}
+
+
+ .nnpt {
+    font-family: 'Fixedsys Excelsior';
+    opacity: 0;
+ 
+    position: absolute;
+    bottom: 1000px;
+}
+
 .xterm {
     cursor: text;
     position: relative;
@@ -43,6 +58,16 @@
     padding-left: 1rem;
     -ms-user-select: none;
     -webkit-user-select: none;
+}
+
+.xterm-size {
+    height: calc(8.5rem + 1px) !important; 
+    background: rgb(255,255,255)
+}
+
+.xterm-size-shrink {
+    height: calc(2.5rem + 1px); 
+    background: rgb(255,255,255)
 }
 
 .xterm.focus,
