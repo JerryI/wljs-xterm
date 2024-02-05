@@ -10,7 +10,8 @@
     "frontend": "src/Frontend.wl",
     "js": "dist/kernel.js",
     "styles": "src/xterm.css",
-    "priority": 599
+    "priority": 599,
+    "category": "Notebook Extensions"
   },
   "repository": {
     "type": "git",
