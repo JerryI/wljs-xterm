@@ -1,25 +1,154 @@
-Component[OptionsPattern[]] := With[{messager = OptionValue["MessagePort"], Uid = CreateUUID[]},
-    EventHandler[Uid, Function[Null,
-        With[{client = Global`$Client (*`*)},
-            WebUISubmit[Global`UIXtermLoad["xterm-container"](*`*), client];
-            Echo[messager];
-            EventHandler[EventClone[messager], {
-                any_String :> Function[mess,
-                    Echo[ToString[mess]];
-                    Echo[any];
-                    WebUISubmit[Global`UIXtermPrint[ToString[mess], any](*`*), client];
-                ]
-            }];
-        ];
-    ]];
+Head        := ImportComponent["Components/Head.wlx"];
 
-    {
-        <div id="xterm-container" style="background: rgb(239,239,239)" class="sticky bottom-0 z-40 h-40 shrink-0 overflow-hidden border-t border-gray-300 bg-white"></div>
-    ,
-        <WebUIOnLoad Event={Uid}/>
-    } // StringRiffle
-];
+Notifications  = ImportComponent["Components/Notifications/Notifications.wlx"];
 
-Options[Component] = {"MessagePort" -> "blaclhole"};
+Alert           = ImportComponent["Components/Alert.wlx"];
+Modals           = ImportComponent["Components/Modals/Modals.wlx"];
 
-Component
+ExtensionsJS = (StringJoin["/", FileNameToURLPath[#]]) &/@ WLJS`PM`Includes["js"];
+ExtensionsStyles = With[{Path = StringJoin["/", FileNameToURLPath[#]]},
+  <link rel="stylesheet" href="{Path}"/> 
+] &/@ WLJS`PM`Includes["styles"] // ToStringRiffle;
+
+{loadSettings, storeSettings}        = ImportComponent["Frontend/Settings.wl"];
+
+settings = <||>;
+loadSettings[settings];
+
+addListeners[cli_, chat_] := With[{socket = EventClone[cli]},
+    EventHandler[socket, {"Closed" -> Function[Null,
+        EventRemove[socket];
+    ]}];
+]
+
+evaluateInPlace[expr_String, k_, p_] := With[{t = Transaction[]},
+    t["Evaluator"] = Internal`Kernel`Evaluator`Simple (*`*);
+    t["Data"] = expr;
+
+    EventHandler[t, {
+        (* capture successfull event of the last transaction to end the process *)  
+        "Result" -> Function[data, 
+            EventFire[p, Resolve, data];
+        ]
+    }];      
+
+    Kernel`Submit[k, t](*`*);
+]
+
+
+getKernelsNames := With[{
+    locals = AppExtensions`KernelList(*`*) // ReleaseHold
+},
+    {"Master Kernel", (#["Name"]) &/@ locals} // Flatten
+]
+
+getKernelTarget[1] := Function[{data, promise}, EventFire[promise, Resolve, <|"Data"->ToString[ToExpression[data, InputForm], InputForm]|>]]
+
+getKernelTarget[i_] := With[{
+    kernel = Part[AppExtensions`KernelList(*`*) // ReleaseHold, i - 1]
+},
+    Function[{data, promise},
+        evaluateInPlace[data, kernel, promise]
+    ]
+]
+
+
+
+
+App[request_] := Module[{client, channel, target}, With[{
+        secret = CreateUUID[], 
+        GlobalControls  = CreateUUID[],
+        LocalControls   = CreateUUID[],
+        ModalController = CreateUUID[],
+        GlobalMessanger = CreateUUID[],
+        GlobalParameters = <|"ElectronQ" -> ElectronQ[request], "AccentColor"->"teal"|>
+    },
+
+    (* /* destructor */ *)
+
+
+    EventHandler[secret, {
+        "Load" -> Function[Null,
+            client = Global`$Client(*`*);
+            channel = CreateUUID[];
+
+            With[{socket = EventClone[client]},
+                EventHandler[socket, {"Closed" -> Function[Null,
+
+                    Echo["Xterm was destroyed!"];
+                    ClearAll[client];
+                    ClearAll[channel];
+                    ClearAll[target];
+                    ClearAll[socket];
+                    EventRemove[channel];
+                ]}]
+            ];
+
+            With[{
+                p = Promise[],
+                cli = client
+            }, 
+                EventFire[ModalController, "Select", <|"Client"->cli, "Promise"->p, "Title"->"Which Kernel", "Options"->getKernelsNames|>];
+                Then[p, Function[choise,
+                    target = getKernelTarget[choise["Result"]];
+
+                    WebUISubmit[UIXtermLoad["xterm-container", channel], client];
+                ]]
+            ];
+
+                
+
+            EventHandler[channel, {"Write" -> Function[data,    
+                With[{mp = Promise[]},
+                    target[URLDecode[data], mp];
+                    Then[mp, Function[msg,
+                        WebUISubmit[UIXtermResolve[URLEncode[UIXtermColorize @ (msg["Data"])]], client];
+                    ] ];
+                ];
+            ]}];
+        ],
+
+        "Comment" -> Function[data,
+          EventFire[chat, "Comment", data];
+        ]
+      }
+    ];
+
+{
+    "<!DOCTYPE html>",
+    <html class="h-full"> 
+        <Head Title={"xTerm"} Settings={settings}>
+            <meta charset="utf-8"/>
+            <WLJSHeader List={ExtensionsJS}/>  
+            <script type="module" src="/wljs-xterm/dist/kernel.js"></script>
+            <WLJSTransportScript TwoKernels={False} Port={$Env["ws"]}/>     
+            <WebUIInitializationScript/>
+            <ExtensionsStyles/>
+            <link rel="stylesheet" type="text/css" href="/wljs-xterm/src/xterm.css" />
+        </Head>  
+        <body class="h-full dark:linux:bg-gray-700 dark:owin:bg-gray-700 owin:border owin:border-gray-500 owin:bg-blue-100/20"> 
+        <div>
+          <Alert/>
+          <Modals ModalsPort={ModalController}/>
+          
+          <div id="frame">
+            <div class="h-full flex flex-col">          
+              <Notifications MessagePort={GlobalMessanger}/>
+              <main class="grow flex flex-col overflow-hidden">
+                <div class="divide-y divide-gray-200 flex flex-col overflow-hidden h-full bg-transparent dark:divide-gray-600">
+                  <div class="px-4 py-2 text-center text-sm text-gray-500 dark:text-gray-400 linux:hidden win:h-titlebar owin:h-titlebar" style="-webkit-app-region: drag">
+                    Kernel Terminal
+                  </div>
+                  <div id="xterm-container" class="dark:invert dark:hue-rotate-180 dark:contrast-75 dark:brightness-5 owin:m-4 owin:mt-2 owin:rounded-lg owin:bg-white owin:shadow win:m-4 win:mt-2 win:rounded-lg win:bg-white win:shadow linux:m-4 linux:mt-2 linux:rounded-lg linux:bg-white linux:shadow bg-g-trans xtem-size h-full"></div>
+                </div>           
+                <WebUIOnLoad Event={secret} Pattern={"Load"}/>
+              </main>              
+            </div> 
+          </div>
+        </div>
+        </body>
+    </html>
+} // StringRiffle
+] ];
+
+App

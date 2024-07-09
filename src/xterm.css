@@ -35,14 +35,33 @@
  *  Default styles for xterm.js
  */
 
+
+
+ .nnpt {
+
+    opacity: 0;
+    
+    position: absolute;
+    bottom: 1000px;
+}
+
 .xterm {
     cursor: text;
     position: relative;
     user-select: none;
+    font-family: 'Hasklig';
     padding: 0.5rem;
     padding-left: 1rem;
     -ms-user-select: none;
     -webkit-user-select: none;
+}
+
+.xterm-size {
+    height: calc(8.5rem + 1px) !important; 
+}
+
+.xterm-size-shrink {
+    height: calc(2.5rem + 1px); 
 }
 
 .xterm.focus,

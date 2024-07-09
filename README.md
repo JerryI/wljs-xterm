@@ -1,4 +1,4 @@
-# An internal terminal for WLJS Notebook 2.0
+# An internal terminal for WLJS Notebook
 Based on XTerm.js
 
 ## License

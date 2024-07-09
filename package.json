@@ -1,25 +1,28 @@
 {
   "name": "wljs-xterm",
-  "version": "0.0.1",
-  "description": "Xterm extension for WLJS Notebook",
+  "version": "0.0.2",
+  "description": "A terminal extension for WLJS Notebook",
   "scripts": {
-    "build": "node --max-old-space-size=8192 ./node_modules/.bin/rollup --config rollup.config.mjs"
+    "build": "node --max-old-space-size=8192 ./node_modules/.bin/rollup --config rollup.config.mjs",
+    "restore": "mkdir _temp && cd _temp && git clone https://github.com/JerryI/wljs-xterm && mv wljs-xterm/.git ../.git && cd .. && rm -rf _temp"
   },
   "defaultPackage": true,
   "wljs-meta": {
     "frontend": "src/Frontend.wl",
-    "js": "dist/kernel.js",
-    "styles": "src/xterm.css",
-    "priority": 599
+    "priority": 190599,
+    "category": "Notebook Extensions"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/JerryI/wljs-xterm"
   },
   "dependencies": {
+    "@xterm/addon-search": "^0.15.0",
+    "local-echo": "github:wavesoft/local-echo",
     "rollup": "^3.21.6",
     "xterm": "^5.3.0",
-    "xterm-addon-fit": "^0.8.0"
+    "xterm-addon-fit": "^0.8.0",
+    "xterm-webfont": "^2.0.0"
   },
   "resolutions": {
     "@babel/preset-env": "7.13.8"
