@@ -10,7 +10,15 @@
   "wljs-meta": {
     "frontend": "src/Frontend.wl",
     "priority": 190599,
-    "category": "Notebook Extensions"
+    "category": "Notebook Extensions",
+    "menu": [
+      {
+        "label": "Terminal",
+        "event": "xterm_open",
+        "spawnWindow": false,
+        "type": "button"
+      }
+    ]
   },
   "repository": {
     "type": "git",

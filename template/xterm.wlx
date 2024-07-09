@@ -79,7 +79,7 @@ App[request_] := Module[{client, channel, target}, With[{
                     ClearAll[client];
                     ClearAll[channel];
                     ClearAll[target];
-                    ClearAll[socket];
+                    EventRemove[socket];
                     EventRemove[channel];
                 ]}]
             ];
@@ -102,7 +102,7 @@ App[request_] := Module[{client, channel, target}, With[{
                 With[{mp = Promise[]},
                     target[URLDecode[data], mp];
                     Then[mp, Function[msg,
-                        WebUISubmit[UIXtermResolve[URLEncode[UIXtermColorize @ (msg["Data"])]], client];
+                        WebUISubmit[UIXtermResolve[URLEncode[UIXtermColorize @ CodeFormat[msg["Data"], 	Airiness->0.5, 	"LineWidth"->50]]], client];
                     ] ];
                 ];
             ]}];
@@ -127,15 +127,15 @@ App[request_] := Module[{client, channel, target}, With[{
             <link rel="stylesheet" type="text/css" href="/wljs-xterm/src/xterm.css" />
         </Head>  
         <body class="h-full dark:linux:bg-gray-700 dark:owin:bg-gray-700 owin:border owin:border-gray-500 owin:bg-blue-100/20"> 
-        <div>
+        <div class="h-full">
           <Alert/>
           <Modals ModalsPort={ModalController}/>
           
-          <div id="frame">
+          <div id="frame" class="h-full">
             <div class="h-full flex flex-col">          
               <Notifications MessagePort={GlobalMessanger}/>
-              <main class="grow flex flex-col overflow-hidden">
-                <div class="divide-y divide-gray-200 flex flex-col overflow-hidden h-full bg-transparent dark:divide-gray-600">
+              <main class="grow flex flex-col overflow-hidden h-full">
+                <div class="divide-y divide-gray-200 flex flex-col overflow-hidden h-full bg-transparent dark:divide-gray-600 w-full">
                   <div class="px-4 py-2 text-center text-sm text-gray-500 dark:text-gray-400 linux:hidden win:h-titlebar owin:h-titlebar" style="-webkit-app-region: drag">
                     Kernel Terminal
                   </div>

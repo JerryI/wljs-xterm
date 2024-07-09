@@ -1158,6 +1158,7 @@ core.UIXtermLoad = async (args, env) => {
           selection: "blue"
         },
         fontSize: 14,
+        fontFamily: 'Hasklig, monospace'
     });
 
     terminal.options.theme.background = "rgb(0,0,0,0)";

@@ -40,8 +40,9 @@
  .nnpt {
 
     opacity: 0;
-    
+    font-family: 'Hasklig';
     position: absolute;
+
     bottom: 1000px;
 }
 
@@ -56,9 +57,6 @@
     -webkit-user-select: none;
 }
 
-.xterm-size {
-    height: calc(8.5rem + 1px) !important; 
-}
 
 .xterm-size-shrink {
     height: calc(2.5rem + 1px); 

@@ -14,7 +14,8 @@ BeginPackage["Notebook`XTerm`", {
     "KirillBelov`Internal`",
     "Notebook`Editor`Snippets`",
     "JerryI`WLX`WLJS`",
-    "JerryI`Misc`WLJS`Transport`"    
+    "JerryI`Misc`WLJS`Transport`",
+    "CodeFormatter`"
 }]
 
 UIXtermLoad;
@@ -26,10 +27,11 @@ Begin["`Private`"]
 
 UIXtermColorize[str_String] := StringReplace[str, {
     x: RegularExpression["\"[^\"]+\""] :> StringJoin["\\x1b[38;5;137m", x, "\\x1b[0m"],
-    d: RegularExpression["\\-?\\d*\\.?\\d*"] :> StringJoin["\\x1b[38;5;96m", d, "\\x1b[0m"],
+    d: RegularExpression["[\\-?\\d*\\.?\\d*]+"] :> StringJoin["\\x1b[38;5;96m", d, "\\x1b[0m"],
     b: RegularExpression["[\\{\\}]+"] :> StringJoin["\\x1b[38;5;22m", b, "\\x1b[0m"],
     g: RegularExpression["[\\<\\|]+"] :> StringJoin["\\x1b[38;5;23m", g, "\\x1b[0m"],
-    g: RegularExpression["[\\|\\>]+"] :> StringJoin["\\x1b[38;5;23m", g, "\\x1b[0m"]
+    g: RegularExpression["[\\|\\>]+"] :> StringJoin["\\x1b[38;5;23m", g, "\\x1b[0m"],
+    g: RegularExpression["\\$Failed"] :> StringJoin["\\x1b[1;31m", g, "\\x1b[0m"]
   }]
 
 rootDir = $InputFileName // DirectoryName // ParentDirectory;
@@ -51,6 +53,23 @@ SnippetsCreateItem[
 EventHandler[SnippetsEvents, {
     "xtermCall" -> Function[assoc, WebUILocation["/xterm", assoc["Client"], "Target"->_, "Features"->"width=660, height=440, top=0, left=800"] ]
 }];
+
+
+listener[OptionsPattern[] ] := 
+With[{
+    Controls = OptionValue["Controls"]
+},
+    EventHandler[EventClone[Controls], {"xterm_open" -> Function[Null, 
+        WebUILocation["/xterm", Global`$Client, "Target"->_, "Features"->"width=660, height=440, top=0, left=800"]
+    ]}];
+    ""
+]
+
+Options[listener] = {"Path"->"", "Parameters"->"", "Modals"->"", "AppEvent"->"", "Controls"->"", "Messanger"->""}
+
+
+AppExtensions`TemplateInjection["AppTopBar"] = listener;
+
 
 End[]
 EndPackage[]
